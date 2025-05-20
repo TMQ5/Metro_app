@@ -38,23 +38,26 @@ start = st.selectbox("اختر محطة البداية:", list(stations.keys()))
 end = st.selectbox("اختر محطة الوصول:", list(stations.keys()))
 
 if start and end and start != end:
-    path = nx.shortest_path(G, source=start, target=end, weight="weight")
-    st.success(f"أقصر مسار من {start} إلى {end} هو: {' → '.join(path)}")
+    if nx.has_path(G, start, end):
+        path = nx.shortest_path(G, source=start, target=end, weight="weight")
+        st.success(f"أقصر مسار من {start} إلى {end} هو: {' → '.join(path)}")
 
-    m = folium.Map(location=[24.7136, 46.6753], zoom_start=12)
+        m = folium.Map(location=[24.7136, 46.6753], zoom_start=12)
 
-    for station, data in stations.items():
-        folium.CircleMarker(
-            location=data["coords"],
-            radius=5,
-            color="blue" if station in path else "gray",
-            fill=True,
-            popup=station
-        ).add_to(m)
+        for station, data in stations.items():
+            folium.CircleMarker(
+                location=data["coords"],
+                radius=5,
+                color="blue" if station in path else "gray",
+                fill=True,
+                popup=station
+            ).add_to(m)
 
-    coords = [stations[pt]["coords"] for pt in path]
-    folium.PolyLine(coords, color="blue", weight=5).add_to(m)
+        coords = [stations[pt]["coords"] for pt in path]
+        folium.PolyLine(coords, color="blue", weight=5).add_to(m)
 
-    st_folium(m, width=700, height=500)
+        st_folium(m, width=700, height=500)
+    else:
+        st.error(f"لا يوجد مسار متصل بين {start} و {end}.")
 else:
     st.warning("يرجى اختيار محطتين مختلفتين.")
